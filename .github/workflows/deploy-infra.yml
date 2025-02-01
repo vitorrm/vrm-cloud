@@ -26,7 +26,7 @@ jobs:
           OCI_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
           OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
           OCI_FINGERPRINT: ${{ vars.OCI_FINGERPRINT }}
-          OCI_STATE_PREAUTH_URL: ${{ secrets.OCI_COMPARTMENT_ID }}
+          OCI_STATE_PREAUTH_URL: ${{ secrets.OCI_STATE_PREAUTH_URL }}
           BASTION_PUBLIC_KEY_CONTENT: ${{ vars.BASTION_PUBLIC_KEY_CONTENT }}
         run: |
           mkdir -p ~/.oci
