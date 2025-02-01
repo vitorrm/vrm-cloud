@@ -1,4 +1,4 @@
-name: Oracle CI Deployment
+name: Oracle CI - Infra Deployment
 on:
   push:
     branches: ["main"]
@@ -28,6 +28,7 @@ jobs:
           OCI_REGION: ${{ secrets.OCI_REGION }}
           OCI_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
           OCI_STATE_PREAUTH_URL: ${{ secrets.OCI_COMPARTMENT_ID }}
+          BASTION_PUBLIC_KEY_CONTENT: ${{ secrets.BASTION_PUBLIC_KEY_CONTENT }}
         run: |
           mkdir -p ~/.oci
           echo "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem

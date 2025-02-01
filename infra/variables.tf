@@ -1,9 +1,19 @@
-variable "tenancy_ocid" {}
-variable "user_ocid" {}
-variable "private_key_path" {}
-variable "fingerprint" {}
 variable "region" {}
-variable "compartment_id" {}
+variable "tenancy_ocid" {
+  sensitive = true
+}
+variable "user_ocid" {
+  sensitive = true
+}
+variable "private_key_path" {
+  sensitive = true
+}
+variable "fingerprint" {
+  sensitive = true
+}
+variable "compartment_id" {
+  sensitive = true
+}
 variable "bastion_public_key_content" {
   default = ""
 }
