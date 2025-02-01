@@ -1,0 +1,6 @@
+.env
+.secret
+**/.terraform/
+
+pre-infra/terraform.tfstate
+infra/backend.config

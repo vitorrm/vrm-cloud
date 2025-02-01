@@ -1,0 +1,53 @@
+name: Oracle CI Deployment
+on:
+  push:
+    branches: ["main"]
+  pull_request: # Optional: Run plan on PRs
+
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    environment: production # Optional: For approval workflows
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      - name: Configure Credentials & Secrets
+        env:
+          OCI_TENANCY_OCID: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_REGION: ${{ secrets.OCI_REGION }}
+          OCI_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
+          OCI_STATE_PREAUTH_URL: ${{ secrets.OCI_COMPARTMENT_ID }}
+        run: |
+          mkdir -p ~/.oci
+          echo "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          echo "address=\"$OCI_STATE_PREAUTH_URL\"" > ./infra/backend.config
+
+      - name: Terraform Init
+        working-directory: ./infra
+        run: terraform init
+
+      - id: plan
+        name: Terraform Plan
+        working-directory: ./infra
+        run: terraform plan -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "private_key_path=~/.oci/oci_api_key.pem" -var "fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
+
+      - run: echo ${{ steps.plan.outputs.stdout }}
+      - run: echo ${{ steps.plan.outputs.stderr }}
+      - run: echo ${{ steps.plan.outputs.exitcode }}
+
+      - name: Terraform Apply
+        working-directory: ./infra
+        run: terraform apply -auto-approve -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "private_key_path=~/.oci/oci_api_key.pem" -var "fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
+        # For production, add a manual approval step here.
