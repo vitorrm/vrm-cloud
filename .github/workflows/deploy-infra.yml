@@ -1,8 +1,7 @@
 name: Oracle CI - Infra Deployment
 on:
   push:
-    branches: ["main"]
-  pull_request: # Optional: Run plan on PRs
+    branches: ["disabled"]
 
 jobs:
   terraform:
