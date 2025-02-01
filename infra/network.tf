@@ -1,7 +1,13 @@
+locals {
+  vcn_cidr_block = "10.1.0.0/16"
+  public_subnet_cidr_block = "10.1.1.0/24"
+  private_subnet_cidr_block = "10.1.10.0/24"
+}
+
 # Virtual Cloud Network (VCN) for the VRM environment
 resource "oci_core_vcn" "vrm_vcn" {
   compartment_id = var.compartment_id
-  cidr_block     = "10.1.0.0/16"
+  cidr_block     = local.vcn_cidr_block
   display_name   = "vrm-vcn"
   dns_label      = "vrmvcn"
 }
@@ -13,18 +19,24 @@ resource "oci_core_internet_gateway" "internet_gateway" {
   vcn_id         = oci_core_vcn.vrm_vcn.id
 }
 
+resource "oci_core_public_ip" "reserved_public_ip" {
+  compartment_id = var.compartment_id
+  lifetime       = "RESERVED"
+}
+
 # NAT Gateway for outbound internet access from the private subnet
 resource "oci_core_nat_gateway" "nat_gateway" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vrm_vcn.id
+  public_ip_id = oci_core_public_ip.reserved_public_ip.id
   display_name   = "nat-gateway"
 }
 
-# Public Subnet for the NAT instance
+# Public Subnet 
 resource "oci_core_subnet" "public_subnet" {
   compartment_id      = var.compartment_id
   vcn_id              = oci_core_vcn.vrm_vcn.id
-  cidr_block          = "10.1.1.0/24"
+  cidr_block          = local.public_subnet_cidr_block
   display_name        = "public-subnet-nat"
   dns_label           = "publicnat"
   security_list_ids   = [oci_core_security_list.public_security_list.id]
@@ -84,7 +96,7 @@ resource "oci_core_route_table" "private_route_table" {
 resource "oci_core_subnet" "private_subnet" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vrm_vcn.id
-  cidr_block     = "10.1.10.0/24"
+  cidr_block     = local.private_subnet_cidr_block
   display_name   = "private-subnet"
   dns_label      = "vrmsubnet"
   security_list_ids = [oci_core_security_list.private_security_list.id]
@@ -97,22 +109,23 @@ resource "oci_core_subnet" "private_subnet" {
 resource "oci_core_security_list" "private_security_list" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.vrm_vcn.id
-  display_name   = "vrmSecurityList"
-
+  display_name   = "public-security-list"
   # Egress rule to allow outbound traffic to any destination
   egress_security_rules {
+    description = "SSH outbound"
     protocol    = "6"
     destination = "0.0.0.0/0"
   }
-
   # Ingress rule to allow SSH access (port 22) from any source
   ingress_security_rules {
+    description = "SSH inbound"
     protocol = "6"
-    source   = "0.0.0.0/0"
-
+    source   = local.private_subnet_cidr_block
+    source_type = "CIDR_BLOCK"
     tcp_options {
       max = "22"
       min = "22"
     }
   }
+
 }

@@ -4,6 +4,9 @@ variable "private_key_path" {}
 variable "fingerprint" {}
 variable "region" {}
 variable "compartment_id" {}
+variable "bastion_public_key_content" {
+  default = ""
+}
 
 # Data source for availability domain
 data "oci_identity_availability_domain" "ad" {

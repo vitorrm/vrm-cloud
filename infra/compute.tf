@@ -15,6 +15,16 @@ resource "oci_core_instance" "vrm_cloud_server" {
   }
 
   create_vnic_details {
+    private_ip     = "10.1.10.1"
+    hostname_label = "vrmcloudserver"
+    assign_private_dns_record = true
     subnet_id = oci_core_subnet.private_subnet.id
+  }
+
+  agent_config {
+    plugins_config {
+      desired_state = "ENABLED"
+      name = "Bastion"
+    }
   }
 }
