@@ -15,7 +15,7 @@ resource "oci_core_instance" "vrm_cloud_server" {
   }
 
   create_vnic_details {
-    private_ip     = "10.1.10.1"
+    private_ip     = "10.1.10.10"
     hostname_label = "vrmcloudserver"
     assign_private_dns_record = true
     assign_public_ip = false
