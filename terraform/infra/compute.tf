@@ -23,7 +23,7 @@ resource "oci_core_instance" "vrm_cloud_server" {
   }
 
   metadata = {
-    ssh_authorized_keys = file(var.bastion_public_key_path)
+    ssh_authorized_keys = var.bastion_public_key_content
   }
 
   agent_config {
@@ -32,4 +32,9 @@ resource "oci_core_instance" "vrm_cloud_server" {
       name          = "Bastion"
     }
   }
+
+  # # NOTE: ignore changes to image and authorized_keys, these will get updated out of band
+  # lifecycle {
+  #   ignore_changes = ["image", "metadata"]
+  # }
 }

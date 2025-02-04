@@ -5,16 +5,16 @@ variable "tenancy_ocid" {
 variable "user_ocid" {
   sensitive = true
 }
-variable "oci_private_key_path" {
+variable "oci_private_key_content" {
   sensitive = true
 }
-variable "fingerprint" {
+variable "oci_private_key_fingerprint" {
   sensitive = true
 }
 variable "compartment_id" {
   sensitive = true
 }
-variable "bastion_public_key_path" {
+variable "bastion_public_key_content" {
   default = "~/.ssh/id_rsa.pub"
 }
 

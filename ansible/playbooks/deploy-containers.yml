@@ -1,6 +1,6 @@
 ---
 - name: Deploy application containers
-  hosts: oci_vms
+  hosts: all
   tasks:
     - name: Ensure containers are running
       community.docker.docker_container:

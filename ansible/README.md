@@ -1,7 +1,8 @@
+```bash
 ansible-galaxy install -r requirements.yml
+```
 
-ansible-playbook -i ./inventory/prod/hosts.yml playbooks/test.yml --key-file "~/.ssh/id_rsa"
-
-## to retrive the sessionId
-
-export BASTION_SESSION_ID=$(terraform output -raw bastion_connection_session_id)
+```bash
+BASTION_SESSION_ID=$(terraform output -raw bastion_connection_session_id)
+ansible-playbook -i ./inventory/prod/hosts.yml playbooks/test.yml --key-file "../.secret/id_rsa_cloud" -e "bastion_session_id=$BASTION_SESSION_ID"
+```

@@ -28,10 +28,6 @@ jobs:
 
       - name: Configure Credentials & Secrets
         run: |
-          mkdir -p ~/.oci
-          echo "$BASTION_PUBLIC_KEY_CONTENT" > ~/.ssh/id_rsa.pub
-          echo "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
-          chmod 600 ~/.oci/oci_api_key.pem
           echo "address=\"$OCI_STATE_PREAUTH_URL\"" > ./terraform/infra/backend.config
 
       - name: Terraform Init
@@ -41,7 +37,7 @@ jobs:
       - id: plan
         name: Terraform Plan
         working-directory: ./terraform/infra
-        run: terraform plan -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "oci_private_key_path=~/.oci/oci_api_key.pem" -var "fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
+        run: terraform plan -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "oci_private_key_content=$OCI_PRIVATE_KEY_CONTENT"  -var "oci_private_key_fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
   apply_changes:
     name: "Apply Terraform Plan"
     runs-on: ubuntu-latest
@@ -57,10 +53,6 @@ jobs:
 
       - name: Configure Credentials & Secrets
         run: |
-          mkdir -p ~/.oci
-          echo "$BASTION_PUBLIC_KEY_CONTENT" > ~/.ssh/id_rsa.pub
-          echo "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
-          chmod 600 ~/.oci/oci_api_key.pem
           echo "address=\"$OCI_STATE_PREAUTH_URL\"" > ./terraform/infra/backend.config
 
       - name: Terraform Init
@@ -69,4 +61,4 @@ jobs:
 
       - name: Terraform Apply
         working-directory: ./terraform/infra
-        run: terraform apply -auto-approve -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "oci_private_key_path=~/.oci/oci_api_key.pem" -var "fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
+        run: terraform apply -auto-approve -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "oci_private_key_content=$OCI_PRIVATE_KEY"  -var "oci_private_key_fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"

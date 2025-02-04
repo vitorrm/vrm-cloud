@@ -1,44 +1,50 @@
 ---
-- name: Install and Configure Nginx
+- name: Mount OCI block volume
   hosts: all
   become: true
-  pre_tasks:
-    - name: Set SSH user for Ubuntu
-      ansible.builtin.set_fact:
-        ansible_user: ubuntu
-      when: ansible_os_family == "Debian"
-
   tasks:
-    - name: Install Nginx Web Server
-      ansible.builtin.apt:
-        update_cache: true
-        name: nginx
-        state: present
+    - name: Ensure mount directory exists
+      ansible.builtin.file:
+        path: /mnt/volume
+        state: directory
+        mode: "0755"
 
-    - name: Create index.html
-      ansible.builtin.copy:
-        dest: "/var/www/html/index.html"
-        content: |
-          <!DOCTYPE html>
-          <html>
-          <head><title>Server Details</title></head>
-          <body>
-          <h1>Served from {{ ansible_hostname }}</h1>
-          </body>
-          </html>
-        mode: "0644"
+    - name: Check if device exists (paravirtualized)
+      ansible.builtin.wait_for:
+        path: /dev/oracleoci/oraclevdb
+        timeout: 30
 
-    - name: Ensure Nginx is running and enabled
-      ansible.builtin.service:
-        name: nginx
-        state: started
-        enabled: true
+    - name: Check if the device has a filesystem
+      ansible.builtin.command: blkid /dev/oracleoci/oraclevdb
+      register: blkid_result
+      ignore_errors: true
 
+    - name: Create filesystem (if empty)
+      ansible.builtin.filesystem:
+        fstype: ext4
+        dev: /dev/oracleoci/oraclevdb
+      when: blkid_result.rc != 0
+
+    - name: Mount the volume
+      ansible.builtin.mount:
+        path: /mnt/volume
+        src: /dev/oracleoci/oraclevdb
+        fstype: ext4
+        state: mounted
+        opts: defaults,noatime
+
+    - name: Verify mount
+      ansible.builtin.command: df -h /mnt/volume
+      register: df_output
+    - debug:
+        var: df_output.stdout_lines
 - name: Provision Docker on Oracle VMs
-  hosts: oci_vms
-  become: yes
+  hosts: vrm_server
+  become: true
   roles:
     - role: geerlingguy.docker
       vars:
         docker_install_compose: true
-        docker_users: "{{ docker_users }}"
+        docker_users:
+          - ubuntu
+          - ansible_user

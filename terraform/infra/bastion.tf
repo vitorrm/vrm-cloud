@@ -8,3 +8,7 @@ resource "oci_bastion_bastion" "vrm_bastion" {
   ]
   max_session_ttl_in_seconds = 1800
 }
+
+output "bastion_id" {
+  value = oci_bastion_bastion.vrm_bastion.id
+}
