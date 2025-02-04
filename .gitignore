@@ -2,5 +2,5 @@
 .secret
 **/.terraform/
 
-pre-infra/terraform.tfstate
-infra/backend.config
+terraform/infra/backend.config
+**/terraform.tfstate

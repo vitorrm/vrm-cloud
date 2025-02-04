@@ -15,17 +15,21 @@ resource "oci_core_instance" "vrm_cloud_server" {
   }
 
   create_vnic_details {
-    private_ip     = "10.1.10.10"
-    hostname_label = "vrmcloudserver"
+    private_ip                = "10.1.10.10"
+    hostname_label            = "vrmcloudserver"
     assign_private_dns_record = true
-    assign_public_ip = false
-    subnet_id = oci_core_subnet.private_subnet.id
+    assign_public_ip          = false
+    subnet_id                 = oci_core_subnet.private_subnet.id
+  }
+
+  metadata = {
+    ssh_authorized_keys = file(var.bastion_public_key_path)
   }
 
   agent_config {
     plugins_config {
       desired_state = "ENABLED"
-      name = "Bastion"
+      name          = "Bastion"
     }
   }
 }

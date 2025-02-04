@@ -5,7 +5,7 @@ variable "tenancy_ocid" {
 variable "user_ocid" {
   sensitive = true
 }
-variable "private_key_path" {
+variable "oci_private_key_path" {
   sensitive = true
 }
 variable "fingerprint" {
@@ -14,8 +14,8 @@ variable "fingerprint" {
 variable "compartment_id" {
   sensitive = true
 }
-variable "bastion_public_key_content" {
-  default = ""
+variable "bastion_public_key_path" {
+  default = "~/.ssh/id_rsa.pub"
 }
 
 # Data source for availability domain

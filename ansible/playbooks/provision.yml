@@ -1,0 +1,44 @@
+---
+- name: Install and Configure Nginx
+  hosts: all
+  become: true
+  pre_tasks:
+    - name: Set SSH user for Ubuntu
+      ansible.builtin.set_fact:
+        ansible_user: ubuntu
+      when: ansible_os_family == "Debian"
+
+  tasks:
+    - name: Install Nginx Web Server
+      ansible.builtin.apt:
+        update_cache: true
+        name: nginx
+        state: present
+
+    - name: Create index.html
+      ansible.builtin.copy:
+        dest: "/var/www/html/index.html"
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head><title>Server Details</title></head>
+          <body>
+          <h1>Served from {{ ansible_hostname }}</h1>
+          </body>
+          </html>
+        mode: "0644"
+
+    - name: Ensure Nginx is running and enabled
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+- name: Provision Docker on Oracle VMs
+  hosts: oci_vms
+  become: yes
+  roles:
+    - role: geerlingguy.docker
+      vars:
+        docker_install_compose: true
+        docker_users: "{{ docker_users }}"

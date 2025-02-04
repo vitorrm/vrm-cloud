@@ -11,7 +11,7 @@ variable "user_ocid" {
 variable "fingerprint" {
 }
 
-variable "private_key_path" {
+variable "oci_private_key_path" {
   default = ""
 }
 
@@ -30,7 +30,7 @@ provider "oci" {
   tenancy_ocid     = var.tenancy_ocid
   user_ocid        = var.user_ocid
   fingerprint      = var.fingerprint
-  private_key_path = var.private_key_path
+  private_key_path = var.oci_private_key_path
 }
 
 variable "instance_shape" {
@@ -144,7 +144,7 @@ resource "oci_core_instance" "free_instance0" {
   shape               = var.instance_shape
 
   shape_config {
-    ocpus = var.instance_ocpus
+    ocpus         = var.instance_ocpus
     memory_in_gbs = var.instance_shape_config_memory_in_gbs
   }
 
@@ -172,7 +172,7 @@ resource "oci_core_instance" "free_instance1" {
   shape               = var.instance_shape
 
   shape_config {
-    ocpus = 1
+    ocpus         = 1
     memory_in_gbs = 6
   }
 
@@ -303,9 +303,9 @@ resource "tls_self_signed_cert" "example" {
 
   subject {
     organization = "Oracle"
-    country = "US"
-    locality = "Austin"
-    province = "TX"
+    country      = "US"
+    locality     = "Austin"
+    province     = "TX"
   }
 
   validity_period_hours = 8760 # 1 year
