@@ -1,7 +1,8 @@
 name: Oracle CI - Infra Deployment
 on:
-  push:
-    branches: ["main"]
+  workflow_dispatch:
+  # push:
+  #   branches: ["main"]
 
 env:
   OCI_REGION: ${{ vars.OCI_REGION }}
