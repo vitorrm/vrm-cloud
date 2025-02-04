@@ -1,7 +1,8 @@
 name: Oracle CI - Infra Deployment
 on:
-  push:
-    branches: ["main"]
+  workflow_dispatch:
+  # push:
+  #   branches: ["main"]
 
 env:
   OCI_REGION: ${{ vars.OCI_REGION }}
@@ -28,19 +29,16 @@ jobs:
 
       - name: Configure Credentials & Secrets
         run: |
-          mkdir -p ~/.oci
-          echo "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
-          chmod 600 ~/.oci/oci_api_key.pem
-          echo "address=\"$OCI_STATE_PREAUTH_URL\"" > ./infra/backend.config
+          echo "address=\"$OCI_STATE_PREAUTH_URL\"" > ./terraform/infra/backend.config
 
       - name: Terraform Init
-        working-directory: ./infra
+        working-directory: ./terraform/infra
         run: terraform init -backend-config="./backend.config" --reconfigure
 
       - id: plan
         name: Terraform Plan
-        working-directory: ./infra
-        run: terraform plan -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "private_key_path=~/.oci/oci_api_key.pem" -var "fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
+        working-directory: ./terraform/infra
+        run: terraform plan -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "oci_private_key_content=$OCI_PRIVATE_KEY_CONTENT"  -var "oci_private_key_fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
   apply_changes:
     name: "Apply Terraform Plan"
     runs-on: ubuntu-latest
@@ -56,15 +54,12 @@ jobs:
 
       - name: Configure Credentials & Secrets
         run: |
-          mkdir -p ~/.oci
-          echo "$OCI_PRIVATE_KEY" > ~/.oci/oci_api_key.pem
-          chmod 600 ~/.oci/oci_api_key.pem
-          echo "address=\"$OCI_STATE_PREAUTH_URL\"" > ./infra/backend.config
+          echo "address=\"$OCI_STATE_PREAUTH_URL\"" > ./terraform/infra/backend.config
 
       - name: Terraform Init
-        working-directory: ./infra
+        working-directory: ./terraform/infra
         run: terraform init -backend-config="./backend.config" --reconfigure
 
       - name: Terraform Apply
-        working-directory: ./infra
-        run: terraform apply -auto-approve -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "private_key_path=~/.oci/oci_api_key.pem" -var "fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"
+        working-directory: ./terraform/infra
+        run: terraform apply -auto-approve -var "tenancy_ocid=$OCI_TENANCY_OCID" -var "user_ocid=$OCI_USER_OCID" -var "oci_private_key_content=$OCI_PRIVATE_KEY"  -var "oci_private_key_fingerprint=$OCI_FINGERPRINT" -var "region=$OCI_REGION" -var "compartment_id=$OCI_COMPARTMENT_ID"

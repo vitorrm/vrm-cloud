@@ -1,0 +1,50 @@
+---
+- name: Mount OCI block volume
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure mount directory exists
+      ansible.builtin.file:
+        path: /mnt/volume
+        state: directory
+        mode: "0755"
+
+    - name: Check if device exists (paravirtualized)
+      ansible.builtin.wait_for:
+        path: /dev/oracleoci/oraclevdb
+        timeout: 30
+
+    - name: Check if the device has a filesystem
+      ansible.builtin.command: blkid /dev/oracleoci/oraclevdb
+      register: blkid_result
+      ignore_errors: true
+
+    - name: Create filesystem (if empty)
+      ansible.builtin.filesystem:
+        fstype: ext4
+        dev: /dev/oracleoci/oraclevdb
+      when: blkid_result.rc != 0
+
+    - name: Mount the volume
+      ansible.builtin.mount:
+        path: /mnt/volume
+        src: /dev/oracleoci/oraclevdb
+        fstype: ext4
+        state: mounted
+        opts: defaults,noatime
+
+    - name: Verify mount
+      ansible.builtin.command: df -h /mnt/volume
+      register: df_output
+    - debug:
+        var: df_output.stdout_lines
+- name: Provision Docker on Oracle VMs
+  hosts: vrm_server
+  become: true
+  roles:
+    - role: geerlingguy.docker
+      vars:
+        docker_install_compose: true
+        docker_users:
+          - ubuntu
+          - ansible_user
