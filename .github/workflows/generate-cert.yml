@@ -44,7 +44,7 @@ jobs:
       - name: Update secret for private key for cert 
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         if: steps.find-secret-privkey.outputs.raw_output != ''
-        id: create-secret-privkey
+        id: update-secret-privkey
         with:
           silent: false
           command: 'vault secret create-base64 --secret-id ${{ steps.find-secret-privkey.outputs.raw_output }} --secret-content-content ${{ env.BASE64_PRIVKEY }} --force'
