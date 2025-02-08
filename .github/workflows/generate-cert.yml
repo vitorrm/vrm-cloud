@@ -43,8 +43,15 @@ jobs:
           silent: false
           command: 'vault secret create-base64 --secret-name cert-domain-privkey --secret-content-content ${{ env.BASE64_PRIVKEY }} --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
 
+      - name: Removing a linefeed that somehow is added to result
+        if: steps.find-secret-privkey.outputs.raw_output != ''
+        run: |
+          PRIVKEY_ID=${{ steps.find-secret-privkey.outputs.raw_output }}
+          PRIVKEY_ID=$(echo $PRIVKEY_ID | tr -d '\n')
+          echo PRIVKEY_ID=${PRIVKEY_ID} >> $GITHUB_ENV
+
       - name: Test
-        run: echo "${{ steps.find-secret-privkey.outputs.output }}" blabla
+        run: echo $PRIVKEY_ID blabla
 
       - name: Update secret for private key for cert 
         uses: oracle-actions/run-oci-cli-command@v1.3.2
