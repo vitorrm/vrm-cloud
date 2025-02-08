@@ -1,8 +1,6 @@
 name: Generate Certicate
 on:
   workflow_dispatch:
-  push:
-    branches: ["main"]
 env:
   ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
   DOMAIN: ${{ vars.DOMAIN }}
