@@ -38,7 +38,7 @@ jobs:
         id: find-secret-privkey
         with:
           silent: false
-          command: 'vault secret list --compartment-id ${{ $OCI_COMPARTMENT_ID }} --name cert-domain-privkey'
+          command: 'vault secret list --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --name cert-domain-privkey'
           query: "data[0].id"
 
       # - name: Check if the ca cert secret exists
