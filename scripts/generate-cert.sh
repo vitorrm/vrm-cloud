@@ -26,8 +26,8 @@ PRIVKEY_FILE="$CERT_DIR/${SUBDOMAINS}.key"
 CA_FILE="$CERT_DIR/ca.cer"
 FULLCHAIN_FILE="$CERT_DIR/fullchain.cer"
 
-export BASE64_PRIVKEY=$(echo "$(cat "$FULLCHAIN_FILE")" | base64 -w 0)
-export BASE64_CA=$(echo "$(cat "$FULLCHAIN_FILE")" | base64 -w 0)
+export BASE64_PRIVKEY=$(echo "$(cat "$PRIVKEY_FILE")" | base64 -w 0)
+export BASE64_CA=$(echo "$(cat "$CA_FILE")" | base64 -w 0)
 export BASE64_FULLCHAIN=$(echo "$(cat "$FULLCHAIN_FILE")" | base64 -w 0)
 echo "BASE64_PRIVKEY=$BASE64_PRIVKEY" >> "$GITHUB_ENV"
 echo "BASE64_CA=$BASE64_CA" >> "$GITHUB_ENV"
