@@ -31,7 +31,7 @@ jobs:
         with:
           silent: false
           command: 'vault secret list --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --name vrm-test'
-          query: "data[?name=='vrm-test'].id"
+          query: "data[0].id"
 
       - name: Echo output
         if: steps.find-secret-vrm-test.output.raw_output != ''
