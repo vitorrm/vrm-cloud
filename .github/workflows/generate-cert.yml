@@ -22,44 +22,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # - name: Generate Certificate with acme.sh
-      #   run: source ./scripts/generate-cert.sh
-
-      - name: Echo output
-        if: steps.find-secret-vrm-test.outputs.raw_output != ''
-        run: echo A ${{steps.find-secret-vrm-test.outputs.raw_output}}
-
-      - name: Echo output
-        if: steps.find-secret-vrm-test.outputs.raw_output == ''
-        run: echo B ${{steps.find-secret-vrm-test.outputs.raw_output}}
+      - name: Generate Certificate with acme.sh
+        run: source ./scripts/generate-cert.sh
 
       - name: Check if the private key for cert secret exists
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: find-secret-privkey
         with:
           silent: false
-          command: 'vault secret list --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --name cert-domain-privkey'
+          command: 'vault secret list --compartment-id --name cert-domain-privkey ${{ env.OCI_COMPARTMENT_ID }}'
           query: "data[0].id"
+
+      - name: Create secret for private key for cert 
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        if: steps.find-secret-privkey.outputs.raw_output == ''
+        id: create-secret-privkey
+        with:
+          silent: false
+          command: 'vault secret create-base64 --secret-name cert-domain-privkey --secret-content-content ${{ env.BASE64_PRIVKEY }} --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
+
+      - name: Update secret for private key for cert 
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        if: steps.find-secret-privkey.outputs.raw_output != ''
+        id: create-secret-privkey
+        with:
+          silent: false
+          command: 'vault secret create-base64 --secret-id ${{ steps.find-secret-privkey.outputs.raw_output }} --secret-content-content ${{ env.BASE64_PRIVKEY }} --force'
 
       # - name: Check if the ca cert secret exists
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
       #   id: find-secret-ca
       #   with:
-      #     command: 'vault secret list --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --name cert-domain-ca'
+      #     command: 'vault secret list --name cert-domain-ca --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }}'
       #     query: "data[0].id"
 
       # - name: Check if the fullchain secret exists
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
       #   id: find-secret-fullchain
       #   with:
-      #     command: 'vault secret list --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --name cert-domain-fullchain'
+      #     command: 'vault secret list --name cert-domain-fullchain --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }}'
       #     query: "data[0].id"
 
-      # - name: Create secret for private key for cert 
-      #   uses: oracle-actions/run-oci-cli-command@v1.3.2
-      #   if: steps.find-secret-privkey.outputs.raw_output == ''
-      #   id: create-secret-privkey
-      #   with:
-      #     silent: false
-      #     command: 'vault secret create-base64 --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --secret-name cert-domain-privkey --vault-id ${{ $OCI_VAULT_ID }} --key-id ${{ $OCI_KMS_SSL_KEY_ID }} --secret-content-content ${{ $BASE64_PRIVKEY }}'
-      #     query: "data[0].id"
