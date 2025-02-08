@@ -11,8 +11,8 @@
 # source ../.env
 
 export BASE64_PRIVKEY=$(echo "TEST CERT 2" | base64 -w 0)
+echo "::add-mask::$BASE64_PRIVKEY"
 echo "BASE64_PRIVKEY=$BASE64_PRIVKEY" >> "$GITHUB_ENV"
-
 # # # Install acme.sh
 # if ! command -v $HOME/.acme.sh/acme.sh &>/dev/null; then
 #   echo "Installing acme.sh..."

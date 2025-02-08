@@ -30,7 +30,7 @@ jobs:
         id: find-secret-privkey
         with:
           silent: false
-          command: 'vault secret list --name cert-domain-privkey --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --limit 1'
+          command: 'vault secret list --name cert-domain-privkey --compartment-id ${{ env.OCI_COMPARTMENT_ID }}'
           query: "data[0].id"
 
       - name: Create secret for private key for cert 
@@ -47,7 +47,7 @@ jobs:
         id: update-secret-privkey
         with:
           silent: false
-          command: 'vault secret update-base64 --secret-id ${{ steps.find-secret-privkey.outputs.raw_output }} --secret-content-content ${{ env.BASE64_PRIVKEY }} --force'
+          command: 'vault secret update-base64 --secret-id ${{steps.find-secret-privkey.outputs.raw_output}} --secret-content-content ${{ env.BASE64_PRIVKEY }} --force'
 
       # - name: Check if the ca cert secret exists
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
