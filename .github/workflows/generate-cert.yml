@@ -44,7 +44,7 @@ jobs:
           command: 'vault secret create-base64 --secret-name cert-domain-privkey --secret-content-content ${{ env.BASE64_PRIVKEY }} --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
 
       - name: Test
-        run: echo ${{ steps.find-secret-privkey.outputs.output[0] }} blabla
+        run: echo ${{ steps.find-secret-privkey.outputs.output }} blabla
 
       - name: Update secret for private key for cert 
         uses: oracle-actions/run-oci-cli-command@v1.3.2
