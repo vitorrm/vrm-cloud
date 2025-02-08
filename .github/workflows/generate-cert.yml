@@ -34,7 +34,12 @@ jobs:
           query: "data[?name=='cert-domain-privkey'].id"
 
       - name: Echo output
-        run: echo ${{steps.find-secret-privkey.output.raw_output}}
+        if: steps.find-secret-privkey.output.raw_output != ''
+        run: echo A ${{steps.find-secret-privkey.output.raw_output}}
+
+      - name: Echo output
+        if: steps.find-secret-privkey.output.raw_output == ''
+        run: echo B ${{steps.find-secret-privkey.output.raw_output}}
 
       # - name: Retrieve the OCID of a named compartment in tenancy
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
