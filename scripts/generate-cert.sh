@@ -10,7 +10,7 @@
 # # For running local:
 # source ../.env
 
-export BASE64_PRIVKEY=$(echo "TEST CERT" | base64 -w 0)
+export BASE64_PRIVKEY=$(echo "TEST CERT 2" | base64 -w 0)
 echo "BASE64_PRIVKEY=$BASE64_PRIVKEY" >> "$GITHUB_ENV"
 
 # # # Install acme.sh
