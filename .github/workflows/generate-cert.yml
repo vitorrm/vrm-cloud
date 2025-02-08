@@ -30,7 +30,7 @@ jobs:
         id: find-secret-privkey
         with:
           silent: false
-          command: 'vault secret list --name cert-domain-privkey --compartment-id ${{ env.OCI_COMPARTMENT_ID }}'
+          command: 'vault secret list --name cert-domain-privkey --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --limit 1'
           query: "data[0].id"
 
       - name: Create secret for private key for cert 
