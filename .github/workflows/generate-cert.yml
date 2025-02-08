@@ -50,16 +50,13 @@ jobs:
           PRIVKEY_ID=$(echo $PRIVKEY_ID | tr -d '\n')
           echo PRIVKEY_ID=${PRIVKEY_ID} >> $GITHUB_ENV
 
-      - name: Test
-        run: echo $PRIVKEY_ID blabla
-
       - name: Update secret for private key for cert 
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         if: steps.find-secret-privkey.outputs.raw_output != ''
         id: update-secret-privkey
         with:
           silent: false
-          command: 'vault secret update-base64 --secret-id "${{ steps.find-secret-privkey.outputs.raw_output }}" --secret-content-content ${{ env.BASE64_PRIVKEY }} --force'
+          command: 'vault secret update-base64 --secret-id "${{ env.PRIVKEY_ID }}" --secret-content-content ${{ env.BASE64_PRIVKEY }} --force'
 
       # - name: Check if the ca cert secret exists
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
