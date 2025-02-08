@@ -30,7 +30,7 @@ jobs:
         id: find-secret-vrm-test
         with:
           silent: false
-          command: 'vault secret list --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --name vrm-test'
+          command: 'vault secret list --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --name cert-domain-privkey'
           query: "data[0].id"
 
       - name: Echo output
