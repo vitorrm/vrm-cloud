@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate Certificate with acme.sh
-        run: source ./scripts/generate-cert.sh
+        run: ./scripts/generate-cert.sh
 
       - name: Check if the private key for cert secret exists
         uses: oracle-actions/run-oci-cli-command@v1.3.2
