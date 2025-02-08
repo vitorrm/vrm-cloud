@@ -30,7 +30,7 @@ jobs:
         id: find-secret-privkey
         with:
           silent: false
-          command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --name cert-domain-privkey'
+          command: 'vault secret list --compartment-id $OCI_COMPARTMENT_ID --name cert-domain-privkey'
           query: "data[?name=='cert-domain-privkey'].id"
 
       - name: Echo output
