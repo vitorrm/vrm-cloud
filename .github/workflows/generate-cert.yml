@@ -25,11 +25,11 @@ jobs:
       # - name: Generate Certificate with acme.sh
       #   run: source ./scripts/generate-cert.sh
 
-      - name: Retrieve the OCID of a named compartment in tenancy
+      - name: Check if the private key for cert exists
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: find-secret-privkey
         with:
-          command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --region "$OCI_REGION" --name cert-domain-privkey'
+          command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --name cert-domain-privkey'
           query: "data[?name=='cert-domain-privkey'].id"
 
       - name: Echo output
@@ -39,14 +39,14 @@ jobs:
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
       #   id: find-secret-ca
       #   with:
-      #     command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --region "$OCI_REGION" --name cert-domain-ca'
+      #     command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --name cert-domain-ca'
       #     query: "data[?name=='cert-domain-ca'].id"
 
       # - name: Retrieve the OCID of a named compartment in tenancy
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
       #   id: find-secret-fullchain
       #   with:
-      #     command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --region "$OCI_REGION" --name cert-domain-fullchain'
+      #     command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --name cert-domain-fullchain'
       #     query: "data[?name=='cert-domain-fullchain'].id"
           
       # - name: Retrieve the display name and shape of the instances in my compartment
