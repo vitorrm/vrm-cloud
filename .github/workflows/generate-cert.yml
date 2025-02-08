@@ -34,12 +34,12 @@ jobs:
           query: "data[0].id"
 
       - name: Echo output
-        if: steps.find-secret-vrm-test.output.raw_output != ''
-        run: echo A ${{steps.find-secret-vrm-test.output.raw_output}}
+        if: steps.find-secret-vrm-test.outputs.raw_output != ''
+        run: echo A ${{steps.find-secret-vrm-test.outputs.raw_output}}
 
       - name: Echo output
-        if: steps.find-secret-vrm-test.output.raw_output == ''
-        run: echo B ${{steps.find-secret-vrm-test.output.raw_output}}
+        if: steps.find-secret-vrm-test.outputs.raw_output == ''
+        run: echo B ${{steps.find-secret-vrm-test.outputs.raw_output}}
 
       # - name: Check if the private key for cert exists
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
@@ -65,7 +65,7 @@ jobs:
           
       # - name: Retrieve the display name and shape of the instances in my compartment
       #   uses: oracle-actions/run-oci-cli-command@v1.3.2
-      #   if: steps.find-secret-privkey.output.raw_output != ''
+      #   if: steps.find-secret-privkey.outputs.raw_output != ''
       #   id: find-instances
       #   with:
       #     command: 'compute instance list --compartment-id ${{ steps.find-compartment-id.outputs.raw_output }}'
