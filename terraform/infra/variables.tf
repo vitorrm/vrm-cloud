@@ -15,8 +15,10 @@ variable "compartment_id" {
   sensitive = true
 }
 variable "bastion_public_key_content" {
-  default = "~/.ssh/id_rsa.pub"
+  default = ""
 }
+
+variable "domain" {}
 
 # Data source for availability domain
 data "oci_identity_availability_domain" "ad" {

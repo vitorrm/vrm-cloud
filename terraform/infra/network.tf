@@ -63,13 +63,23 @@ resource "oci_core_security_list" "public_security_list" {
   vcn_id         = oci_core_vcn.vrm_vcn.id
   display_name   = "public-security-list"
 
-  # Allow SSH inbound
+  # Allow HTTP inbound
+  ingress_security_rules {
+    protocol = "6" # TCP
+    source   = "0.0.0.0/0"
+    tcp_options {
+      max = 80
+      min = 80
+    }
+  }
+
+  # Allow HTTPS inbound
   ingress_security_rules {
     protocol = "6"
     source   = "0.0.0.0/0"
     tcp_options {
-      min = 22
-      max = 22
+      max = 443
+      min = 443
     }
   }
 
@@ -116,7 +126,7 @@ resource "oci_core_security_list" "private_security_list" {
     protocol    = "6"
     destination = "0.0.0.0/0"
   }
-  # Ingress rule to allow SSH access (port 22) from any source
+  # Ingress rule to allow SSH access (port 22) from any source within private net
   ingress_security_rules {
     description = "SSH inbound"
     protocol    = "6"
@@ -125,6 +135,17 @@ resource "oci_core_security_list" "private_security_list" {
     tcp_options {
       max = "22"
       min = "22"
+    }
+  }
+  # Ingress rule to HTTP from any load balancer
+  ingress_security_rules {
+    description = "HTTP 80 inbound"
+    protocol    = "6"
+    source      = local.public_subnet_cidr_block
+    source_type = "CIDR_BLOCK"
+    tcp_options {
+      max = "80"
+      min = "80"
     }
   }
 

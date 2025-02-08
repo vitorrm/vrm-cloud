@@ -6,7 +6,7 @@ resource "oci_bastion_bastion" "vrm_bastion" {
   client_cidr_block_allow_list = [
     "0.0.0.0/0"
   ]
-  max_session_ttl_in_seconds = 1800
+  max_session_ttl_in_seconds = 3600 // 60 min
 }
 
 output "bastion_id" {

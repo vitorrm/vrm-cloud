@@ -3,7 +3,6 @@ containers:
     image: nginx:latest
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - "/mnt/volume/nginx/html:/usr/share/nginx/html"
       - "/mnt/volume/nginx/conf.d:/etc/nginx/conf.d"

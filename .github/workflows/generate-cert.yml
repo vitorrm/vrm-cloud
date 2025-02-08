@@ -1,0 +1,55 @@
+name: Generate Certicate
+on:
+  workflow_dispatch:
+env:
+  ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+  DOMAIN: ${{ vars.DOMAIN }}
+  SUBDOMAINS: ${{ vars.SUBDOMAINS }}
+  DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
+  OCI_CLI_REGION: ${{ vars.OCI_REGION }}
+  OCI_CLI_TENANCY: ${{ secrets.OCI_TENANCY_OCID }}
+  OCI_CLI_USER: ${{ secrets.OCI_USER_OCID }}
+  OCI_COMPARTMENT_ID: ${{ secrets.OCI_COMPARTMENT_ID }}
+  OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY }}
+  OCI_CLI_FINGERPRINT: ${{ vars.OCI_FINGERPRINT }}
+  OCI_VAULT_ID: ${{ vars.OCI_VAULT_ID }}
+  OCI_KMS_SSL_KEY_ID: ${{ vars.OCI_KMS_SSL_KEY_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # - name: Generate Certificate with acme.sh
+      #   run: source ./scripts/generate-cert.sh
+
+      - name: Retrieve the OCID of a named compartment in tenancy
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        id: find-secret-privkey
+        with:
+          command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --region "$OCI_REGION" --name cert-domain-privkey'
+          query: "data[?name=='cert-domain-privkey'].id"
+
+      - name: Retrieve the OCID of a named compartment in tenancy
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        id: find-secret-ca
+        with:
+          command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --region "$OCI_REGION" --name cert-domain-ca'
+          query: "data[?name=='cert-domain-ca'].id"
+
+      - name: Retrieve the OCID of a named compartment in tenancy
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        id: find-secret-fullchain
+        with:
+          command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --region "$OCI_REGION" --name cert-domain-fullchain'
+          query: "data[?name=='cert-domain-fullchain'].id"
+          
+      - name: Retrieve the display name and shape of the instances in my compartment
+        uses: oracle-actions/run-oci-cli-command@v1.3.2
+        if: steps.find-secret-privkey.output.raw_output != ''
+        id: find-instances
+        with:
+          command: 'compute instance list --compartment-id ${{ steps.find-compartment-id.outputs.raw_output }}'
+          query: 'data[*].{name: \"display-name\", shape: shape}'          

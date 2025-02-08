@@ -30,7 +30,7 @@ resource "oci_bastion_session" "session_port_forwarding" {
     target_resource_port               = 22
   }
   display_name           = "vrm_bastion_session_port_forwarding"
-  session_ttl_in_seconds = 1800 // 30min
+  session_ttl_in_seconds = 3600 // 60min
 }
 
 data "oci_bastion_sessions" "bastion_sessions_port_forwarding" {
