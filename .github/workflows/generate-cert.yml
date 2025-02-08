@@ -29,6 +29,7 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: find-secret-privkey
         with:
+          silent: false
           command: 'vault secret list --compartment-id "$OCI_COMPARTMENT_ID" --name cert-domain-privkey'
           query: "data[?name=='cert-domain-privkey'].id"
 
