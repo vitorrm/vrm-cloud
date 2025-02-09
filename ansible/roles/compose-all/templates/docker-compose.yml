@@ -1,10 +1,10 @@
-compose_all_dir: /mnt/volume/compose-all/
-containers:
-  - name: nginx
+services:
+  nginx:
     image: nginx:latest
     ports:
-      - "80:80"
+      - 80:80
+      - "443:443"
     volumes:
       - "/mnt/volume/nginx/html:/usr/share/nginx/html"
       - "/mnt/volume/nginx/conf.d:/etc/nginx/conf.d"
-      #- "/mnt/volume/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "/mnt/volume/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"

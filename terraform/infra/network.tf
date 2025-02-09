@@ -37,7 +37,7 @@ resource "oci_core_subnet" "public_subnet" {
   compartment_id             = var.compartment_id
   vcn_id                     = oci_core_vcn.vrm_vcn.id
   cidr_block                 = local.public_subnet_cidr_block
-  display_name               = "public-subnet-nat"
+  display_name               = "public-subnet"
   dns_label                  = "publicnat"
   security_list_ids          = [oci_core_security_list.public_security_list.id]
   route_table_id             = oci_core_route_table.public_route_table.id

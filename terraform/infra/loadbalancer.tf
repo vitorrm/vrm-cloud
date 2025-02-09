@@ -1,3 +1,9 @@
+locals {
+  privkey   = base64decode(data.oci_secrets_secretbundle.secretbundle_domain_privkey.secret_bundle_content.0.content)
+  ca        = base64decode(data.oci_secrets_secretbundle.secretbundle_domain_ca.secret_bundle_content.0.content)
+  fullchain = base64decode(data.oci_secrets_secretbundle.secretbundle_domain_fullchain.secret_bundle_content.0.content)
+}
+
 resource "oci_load_balancer_load_balancer" "load_balancer" {
   compartment_id = var.compartment_id
   display_name   = "vrm_load_balancer"
@@ -46,14 +52,39 @@ resource "oci_load_balancer_hostname" "load_balancer_hostname" {
 }
 
 resource "oci_load_balancer_listener" "lb_http_listener" {
+  name                     = "http-listener"
   load_balancer_id         = oci_load_balancer_load_balancer.load_balancer.id
   protocol                 = "HTTP"
-  name                     = "http-listener"
   port                     = 80
   default_backend_set_name = oci_load_balancer_backend_set.load_balancer_backend_set.name
   hostname_names           = [oci_load_balancer_hostname.load_balancer_hostname.name]
   connection_configuration {
     idle_timeout_in_seconds = "240"
+  }
+}
+
+# HTTPS
+
+# Upload certificate to Load Balancer
+resource "oci_load_balancer_certificate" "lb_cert" {
+  load_balancer_id   = oci_load_balancer_load_balancer.load_balancer.id
+  certificate_name   = "duckdns-cert"
+  ca_certificate     = local.ca
+  public_certificate = local.fullchain
+  private_key        = local.privkey
+}
+
+resource "oci_load_balancer_listener" "lb_https_listener" {
+  name                     = "https-listener"
+  load_balancer_id         = oci_load_balancer_load_balancer.load_balancer.id
+  protocol                 = "HTTP"
+  port                     = 443
+  default_backend_set_name = oci_load_balancer_backend_set.load_balancer_backend_set.name
+  hostname_names           = [oci_load_balancer_hostname.load_balancer_hostname.name]
+  ssl_configuration {
+    certificate_name        = oci_load_balancer_certificate.lb_cert.certificate_name
+    protocols               = ["TLSv1.2", "TLSv1.3"]
+    verify_peer_certificate = false
   }
 }
 

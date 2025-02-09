@@ -1,21 +1,8 @@
 ---
 
-- name: Install Apps
+- name: Install Services
   hosts: all
   become: true
   roles:
-    - docker-nginx
-
-# - name: Deploy application containers
-#   hosts: all
-#   tasks:
-#     - name: Ensure containers are running
-#       community.docker.docker_container:
-#         name: "{{ item.name }}"
-#         image: "{{ item.image }}"
-#         state: started
-#         restart: yes # see how to move it somewherelse
-#         ports: "{{ item.ports | default(omit) }}"
-#         volumes: "{{ item.volumes | default(omit) }}"
-#       loop: "{{ containers }}"
-#       tags: containers
+    - compose-all
+    - nginx-config

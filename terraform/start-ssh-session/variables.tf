@@ -7,3 +7,4 @@ variable "compartment_id" {}
 variable "bastion_public_key_content" {
   default = ""
 }
+variable "domain" {}

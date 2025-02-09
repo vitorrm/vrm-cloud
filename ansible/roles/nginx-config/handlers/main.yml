@@ -1,0 +1,6 @@
+- name: Restart nginx
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_all_dir }}"
+    state: restarted
+    services:
+    - nginx

@@ -48,3 +48,30 @@ data "oci_core_images" "arm_images" {
   sort_by                  = "TIMECREATED"
   sort_order               = "DESC"
 }
+
+data "oci_vault_secrets" "secret_domain_privkey" {
+  compartment_id = var.compartment_id
+  name           = "cert-domain-privkey"
+}
+
+data "oci_vault_secrets" "secret_domain_ca" {
+  compartment_id = var.compartment_id
+  name           = "cert-domain-ca"
+}
+
+data "oci_vault_secrets" "secret_domain_fullchain" {
+  compartment_id = var.compartment_id
+  name           = "cert-domain-fullchain"
+}
+
+data "oci_secrets_secretbundle" "secretbundle_domain_privkey" {
+  secret_id = data.oci_vault_secrets.secret_domain_privkey.secrets[0].id
+}
+
+data "oci_secrets_secretbundle" "secretbundle_domain_ca" {
+  secret_id = data.oci_vault_secrets.secret_domain_ca.secrets[0].id
+}
+
+data "oci_secrets_secretbundle" "secretbundle_domain_fullchain" {
+  secret_id = data.oci_vault_secrets.secret_domain_fullchain.secrets[0].id
+}

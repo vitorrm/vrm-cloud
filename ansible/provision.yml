@@ -38,6 +38,7 @@
       register: df_output
     - debug:
         var: df_output.stdout_lines
+        
 - name: Provision Docker on Oracle VMs
   hosts: vrm_server
   become: true
