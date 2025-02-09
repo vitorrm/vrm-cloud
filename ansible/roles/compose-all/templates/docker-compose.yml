@@ -8,3 +8,13 @@ services:
       - "/mnt/volume/nginx/html:/usr/share/nginx/html"
       - "/mnt/volume/nginx/conf.d:/etc/nginx/conf.d"
       - "/mnt/volume/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+    restart: always
+  portainer:
+    image: portainer/portainer-ce:latest
+    ports:
+      - 9443:9443 # HTTPS
+      - 9000:9000 # HTTP
+    volumes:
+      - /mnt/volume/portainer/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
