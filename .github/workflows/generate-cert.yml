@@ -1,6 +1,8 @@
 name: Generate Certificate
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *' # Run at 00:00 on the 1st of every month
 env:
   ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
   DOMAIN: ${{ vars.DOMAIN }}
@@ -43,9 +45,9 @@ jobs:
       - name: Removing a linefeed that somehow is added to result
         if: steps.find-secret-privkey.outputs.raw_output != ''
         run: |
-          PRIVKEY_ID=${{ steps.find-secret-privkey.outputs.raw_output }}
-          PRIVKEY_ID=$(echo $PRIVKEY_ID | tr -d '\n')
-          echo PRIVKEY_ID=${PRIVKEY_ID} >> $GITHUB_ENV
+          PRIVKEY_ID="${{ steps.find-secret-privkey.outputs.raw_output }}"
+          PRIVKEY_ID=$(echo "$PRIVKEY_ID" | tr -d '\n')
+          echo "PRIVKEY_ID=${PRIVKEY_ID}" >> $GITHUB_ENV
 
       - name: Update secret for private key for cert 
         uses: oracle-actions/run-oci-cli-command@v1.3.2
@@ -71,9 +73,9 @@ jobs:
       - name: Removing a linefeed that somehow is added to result
         if: steps.find-secret-ca.outputs.raw_output != ''
         run: |
-          DOMAIN_CA_ID=${{ steps.find-secret-ca.outputs.raw_output }}
-          DOMAIN_CA_ID=$(echo $DOMAIN_CA_ID | tr -d '\n')
-          echo DOMAIN_CA_ID=${DOMAIN_CA_ID} >> $GITHUB_ENV
+          DOMAIN_CA_ID="${{ steps.find-secret-ca.outputs.raw_output }}"
+          DOMAIN_CA_ID=$(echo "$DOMAIN_CA_ID" | tr -d '\n')
+          echo "DOMAIN_CA_ID=${DOMAIN_CA_ID}" >> $GITHUB_ENV
 
       - name: Update secret for CA for cert 
         uses: oracle-actions/run-oci-cli-command@v1.3.2
@@ -99,9 +101,9 @@ jobs:
       - name: Removing a linefeed that somehow is added to result
         if: steps.find-secret-fullchain.outputs.raw_output != ''
         run: |
-          DOMAIN_FULLCHAIN_ID=${{ steps.find-secret-fullchain.outputs.raw_output }}
-          DOMAIN_FULLCHAIN_ID=$(echo $DOMAIN_FULLCHAIN_ID | tr -d '\n')
-          echo DOMAIN_FULLCHAIN_ID=${DOMAIN_FULLCHAIN_ID} >> $GITHUB_ENV
+          DOMAIN_FULLCHAIN_ID="${{ steps.find-secret-fullchain.outputs.raw_output }}"
+          DOMAIN_FULLCHAIN_ID=$(echo "$DOMAIN_FULLCHAIN_ID" | tr -d '\n')
+          echo "DOMAIN_FULLCHAIN_ID=${DOMAIN_FULLCHAIN_ID}" >> $GITHUB_ENV
 
       - name: Update secret for Fullchain for cert 
         uses: oracle-actions/run-oci-cli-command@v1.3.2
