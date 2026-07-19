@@ -9,7 +9,9 @@
 # OCI_KMS_SSL_KEY_ID: grab it from output of terraform infra
 
 # # For running local:
-source ../.env
+if [ -f "../.env" ]; then
+  source ../.env
+fi
 
 # # Install acme.sh
 if ! command -v $HOME/.acme.sh/acme.sh &>/dev/null; then
@@ -19,8 +21,14 @@ fi
 
 # # Generate certificate with DuckDNS DNS-01 challenge
 export DuckDNS_Token="$DUCKDNS_TOKEN"
-# to issue $HOME/.acme.sh/acme.sh --issue --dns dns_duckdns -d "${SUBDOMAINS}"
-$HOME/.acme.sh/acme.sh --renew --dns dns_duckdns -d "${SUBDOMAINS}"
+# Generate or renew certificate
+if [ -d "$HOME/.acme.sh/${SUBDOMAINS}_ecc" ]; then
+  echo "Certificate directory exists. Attempting renewal..."
+  $HOME/.acme.sh/acme.sh --renew --dns dns_duckdns -d "${SUBDOMAINS}" --force || echo "Renewal skipped or failed, using existing certificate."
+else
+  echo "Issuing new certificate..."
+  $HOME/.acme.sh/acme.sh --issue --dns dns_duckdns -d "${SUBDOMAINS}"
+fi
 
 # Paths to certificate files
 CERT_DIR="$HOME/.acme.sh/${SUBDOMAINS}_ecc"

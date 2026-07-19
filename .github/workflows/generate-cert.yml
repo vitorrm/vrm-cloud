@@ -1,4 +1,4 @@
-name: Generate Certicate
+name: Generate Certificate
 on:
   workflow_dispatch:
 env:
@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate Certificate with acme.sh
-        run: ./scripts/generate-cert.sh
+        run: bash ./scripts/generate-cert.sh
 
       - name: Check if the private key for cert secret exists
         uses: oracle-actions/run-oci-cli-command@v1.3.2
@@ -38,7 +38,7 @@ jobs:
         if: steps.find-secret-privkey.outputs.raw_output == ''
         with:
           silent: false
-          command: 'vault secret create-base64 --secret-name cert-domain-privkey --secret-content-content ${{ env.BASE64_PRIVKEY }} --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
+          command: 'vault secret create-base64 --secret-name cert-domain-privkey --secret-content-content ${{ env.BASE64_PRIVKEY }} --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
 
       - name: Removing a linefeed that somehow is added to result
         if: steps.find-secret-privkey.outputs.raw_output != ''
@@ -58,7 +58,7 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: find-secret-ca
         with:
-          command: 'vault secret list --name cert-domain-ca --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }}'
+          command: 'vault secret list --name cert-domain-ca --compartment-id ${{ env.OCI_COMPARTMENT_ID }}'
           query: "data[0].id"
 
       - name: Create secret for CA for cert 
@@ -66,7 +66,7 @@ jobs:
         if: steps.find-secret-ca.outputs.raw_output == ''
         with:
           silent: false
-          command: 'vault secret create-base64 --secret-name cert-domain-ca --secret-content-content ${{ env.BASE64_CA }} --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
+          command: 'vault secret create-base64 --secret-name cert-domain-ca --secret-content-content ${{ env.BASE64_CA }} --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
 
       - name: Removing a linefeed that somehow is added to result
         if: steps.find-secret-ca.outputs.raw_output != ''
@@ -86,7 +86,7 @@ jobs:
         uses: oracle-actions/run-oci-cli-command@v1.3.2
         id: find-secret-fullchain
         with:
-          command: 'vault secret list --name cert-domain-fullchain --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }}'
+          command: 'vault secret list --name cert-domain-fullchain --compartment-id ${{ env.OCI_COMPARTMENT_ID }}'
           query: "data[0].id"
 
       - name: Create secret for Fullchain for cert 
@@ -94,7 +94,7 @@ jobs:
         if: steps.find-secret-fullchain.outputs.raw_output == ''
         with:
           silent: false
-          command: 'vault secret create-base64 --secret-name cert-domain-fullchain  --secret-content-content ${{ env.BASE64_FULLCHAIN }} --compartment-id ${{ secrets.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
+          command: 'vault secret create-base64 --secret-name cert-domain-fullchain  --secret-content-content ${{ env.BASE64_FULLCHAIN }} --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
 
       - name: Removing a linefeed that somehow is added to result
         if: steps.find-secret-fullchain.outputs.raw_output != ''
