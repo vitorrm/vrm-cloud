@@ -18,3 +18,44 @@ services:
       - /mnt/volume/portainer/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-agent
+    restart: unless-stopped
+    command: gateway run
+    ports:
+      - "8642:8642"
+      - "9119:9119"
+    volumes:
+      - /mnt/volume/hermes/data:/home/hermes/.hermes
+      - hermes-agent-src:/opt/hermes
+    environment:
+      - HERMES_HOME=/home/hermes/.hermes
+      - HERMES_UID=${UID:-1000}
+      - HERMES_GID=${GID:-1000}
+      
+      # --- Web UI / Dashboard Security ---
+      - HERMES_DASHBOARD=1
+
+  hermes-webui:
+    image: ghcr.io/nesquena/hermes-webui:latest
+    container_name: hermes-webui
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    volumes:
+      - /mnt/volume/hermes/data:/home/hermeswebui/.hermes
+      - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent:ro
+      - /mnt/volume/hermes/workspace:/workspace
+    environment:
+      - WANTED_UID=${UID:-1000}
+      - WANTED_GID=${GID:-1000}
+      - HERMES_HOME=/home/hermeswebui/.hermes
+      - HERMES_WEBUI_STATE_DIR=/home/hermeswebui/.hermes/webui
+      - HERMES_API_URL=http://hermes:9119
+    depends_on:
+      - hermes
+
+volumes:
+  hermes-agent-src:
+
