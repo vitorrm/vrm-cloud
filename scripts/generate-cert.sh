@@ -40,36 +40,31 @@ fi
 # Set DuckDNS token for acme.sh dns_duckdns hook
 export DuckDNS_Token="$DUCKDNS_TOKEN"
 
-# Build domain arguments
-DOMAIN_ARGS=("-d" "$DOMAIN")
-if [ -n "${SUBDOMAINS:-}" ] && [ "$SUBDOMAINS" != "$DOMAIN" ]; then
-  DOMAIN_ARGS+=("-d" "$SUBDOMAINS")
-fi
+# Target domain: use wildcard SUBDOMAINS if provided, otherwise root DOMAIN
+# DuckDNS only supports a single TXT record at a time, so we must issue for a single domain.
+CERT_TARGET_DOMAIN="${SUBDOMAINS:-$DOMAIN}"
 
-echo "Requesting certificate for: ${DOMAIN_ARGS[*]}"
+echo "Requesting certificate for: $CERT_TARGET_DOMAIN"
 
 # Generate or renew certificate
-# If cert already exists in acme.sh, attempt renewal
-if [ -d "$ACME_HOME/${DOMAIN}_ecc" ] || [ -d "$ACME_HOME/${DOMAIN}" ]; then
-  echo "Existing certificate found in ~/.acme.sh. Checking/renewing..."
-  "$ACME_BIN" --renew --dns dns_duckdns "${DOMAIN_ARGS[@]}" || echo "Certificate is still valid or renewal skipped."
-else
-  echo "Issuing new certificate..."
-  "$ACME_BIN" --issue --dns dns_duckdns "${DOMAIN_ARGS[@]}"
+if ! "$ACME_BIN" --issue --dns dns_duckdns -d "$CERT_TARGET_DOMAIN"; then
+  echo "Issue returned non-zero (certificate may already exist). Checking renewal..."
+  "$ACME_BIN" --renew --dns dns_duckdns -d "$CERT_TARGET_DOMAIN" || true
 fi
 
 # Install certificate files into target directory
 echo "Exporting certificate files to $CERTS_DIR..."
-if ! "$ACME_BIN" --install-cert -d "$DOMAIN" --ecc \
+if ! "$ACME_BIN" --install-cert -d "$CERT_TARGET_DOMAIN" --ecc \
   --key-file "$CERTS_DIR/privkey.pem" \
   --fullchain-file "$CERTS_DIR/fullchain.pem" \
   --ca-file "$CERTS_DIR/ca.pem"; then
   echo "ECC install failed, trying standard install..."
-  "$ACME_BIN" --install-cert -d "$DOMAIN" \
+  "$ACME_BIN" --install-cert -d "$CERT_TARGET_DOMAIN" \
     --key-file "$CERTS_DIR/privkey.pem" \
     --fullchain-file "$CERTS_DIR/fullchain.pem" \
     --ca-file "$CERTS_DIR/ca.pem"
 fi
+
 
 PRIVKEY_FILE="$CERTS_DIR/privkey.pem"
 FULLCHAIN_FILE="$CERTS_DIR/fullchain.pem"

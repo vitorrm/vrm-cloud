@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.acme.sh
-          key: acme-sh-${{ vars.DOMAIN }}
+          key: acme-sh-${{ vars.SUBDOMAINS || vars.DOMAIN }}
 
       - name: Generate Certificate with acme.sh
         run: bash ./scripts/generate-cert.sh
