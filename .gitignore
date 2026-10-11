@@ -4,3 +4,4 @@
 
 terraform/infra/backend.config
 **/terraform.tfstate
+ansible/roles/compose-all/templates/hermes/.env.j2

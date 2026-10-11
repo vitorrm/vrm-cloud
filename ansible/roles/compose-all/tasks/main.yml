@@ -7,6 +7,14 @@
     group: root
     mode: '0644'
 
+- name: Copy hermes .env file
+  ansible.builtin.template:
+    src: ./hermes/.env.j2
+    dest: /mnt/volume/hermes/data/.env
+    owner: "{{ ansible_user }}"
+    mode: '0644'
+    force: no
+
 - name: Create and start services
   community.docker.docker_compose_v2:
     project_src: "{{ compose_all_dir }}"
