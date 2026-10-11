@@ -16,6 +16,7 @@ env:
   OCI_CLI_FINGERPRINT: ${{ vars.OCI_FINGERPRINT }}
   OCI_VAULT_ID: ${{ vars.OCI_VAULT_ID }}
   OCI_KMS_SSL_KEY_ID: ${{ vars.OCI_KMS_SSL_KEY_ID }}
+  OCI_LB_ID: ${{ vars.OCI_LB_ID }}
 
 jobs:
   deploy:
@@ -24,90 +25,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache acme.sh
+        uses: actions/cache@v4
+        with:
+          path: ~/.acme.sh
+          key: acme-sh-${{ vars.DOMAIN }}
+
       - name: Generate Certificate with acme.sh
         run: bash ./scripts/generate-cert.sh
 
-      - name: Check if the private key for cert secret exists
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        id: find-secret-privkey
-        with:
-          silent: false
-          command: 'vault secret list --name cert-domain-privkey --compartment-id ${{ env.OCI_COMPARTMENT_ID }}'
-          query: "data[0].id"
+      - name: Install OCI CLI
+        run: pipx install oci-cli
 
-      - name: Create secret for private key for cert 
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        if: steps.find-secret-privkey.outputs.raw_output == ''
-        with:
-          silent: false
-          command: 'vault secret create-base64 --secret-name cert-domain-privkey --secret-content-content ${{ env.BASE64_PRIVKEY }} --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
-
-      - name: Removing a linefeed that somehow is added to result
-        if: steps.find-secret-privkey.outputs.raw_output != ''
-        run: |
-          PRIVKEY_ID="${{ steps.find-secret-privkey.outputs.raw_output }}"
-          PRIVKEY_ID=$(echo "$PRIVKEY_ID" | tr -d '\n')
-          echo "PRIVKEY_ID=${PRIVKEY_ID}" >> $GITHUB_ENV
-
-      - name: Update secret for private key for cert 
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        if: steps.find-secret-privkey.outputs.raw_output != ''
-        with:
-          silent: false
-          command: 'vault secret update-base64 --secret-id "${{ env.PRIVKEY_ID }}" --secret-content-content ${{ env.BASE64_PRIVKEY }} --force'
-
-      - name: Check if the ca cert secret exists
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        id: find-secret-ca
-        with:
-          command: 'vault secret list --name cert-domain-ca --compartment-id ${{ env.OCI_COMPARTMENT_ID }}'
-          query: "data[0].id"
-
-      - name: Create secret for CA for cert 
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        if: steps.find-secret-ca.outputs.raw_output == ''
-        with:
-          silent: false
-          command: 'vault secret create-base64 --secret-name cert-domain-ca --secret-content-content ${{ env.BASE64_CA }} --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
-
-      - name: Removing a linefeed that somehow is added to result
-        if: steps.find-secret-ca.outputs.raw_output != ''
-        run: |
-          DOMAIN_CA_ID="${{ steps.find-secret-ca.outputs.raw_output }}"
-          DOMAIN_CA_ID=$(echo "$DOMAIN_CA_ID" | tr -d '\n')
-          echo "DOMAIN_CA_ID=${DOMAIN_CA_ID}" >> $GITHUB_ENV
-
-      - name: Update secret for CA for cert 
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        if: steps.find-secret-ca.outputs.raw_output != ''
-        with:
-          silent: false
-          command: 'vault secret update-base64 --secret-id "${{ env.DOMAIN_CA_ID }}" --secret-content-content ${{ env.BASE64_CA }} --force'
-
-      - name: Check if the fullchain secret exists
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        id: find-secret-fullchain
-        with:
-          command: 'vault secret list --name cert-domain-fullchain --compartment-id ${{ env.OCI_COMPARTMENT_ID }}'
-          query: "data[0].id"
-
-      - name: Create secret for Fullchain for cert 
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        if: steps.find-secret-fullchain.outputs.raw_output == ''
-        with:
-          silent: false
-          command: 'vault secret create-base64 --secret-name cert-domain-fullchain  --secret-content-content ${{ env.BASE64_FULLCHAIN }} --compartment-id ${{ env.OCI_COMPARTMENT_ID }} --vault-id ${{ env.OCI_VAULT_ID }} --key-id ${{ env.OCI_KMS_SSL_KEY_ID }}'
-
-      - name: Removing a linefeed that somehow is added to result
-        if: steps.find-secret-fullchain.outputs.raw_output != ''
-        run: |
-          DOMAIN_FULLCHAIN_ID="${{ steps.find-secret-fullchain.outputs.raw_output }}"
-          DOMAIN_FULLCHAIN_ID=$(echo "$DOMAIN_FULLCHAIN_ID" | tr -d '\n')
-          echo "DOMAIN_FULLCHAIN_ID=${DOMAIN_FULLCHAIN_ID}" >> $GITHUB_ENV
-
-      - name: Update secret for Fullchain for cert 
-        uses: oracle-actions/run-oci-cli-command@v1.3.2
-        if: steps.find-secret-fullchain.outputs.raw_output != ''
-        with:
-          silent: false
-          command: 'vault secret update-base64 --secret-id "${{ env.DOMAIN_FULLCHAIN_ID }}" --secret-content-content ${{ env.BASE64_FULLCHAIN }} --force'
+      - name: Deploy Certificate to OCI Load Balancer and Vault
+        run: bash ./scripts/deploy-cert-oci.sh

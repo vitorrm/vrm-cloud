@@ -86,8 +86,18 @@ resource "oci_load_balancer_listener" "lb_https_listener" {
     protocols               = ["TLSv1.2", "TLSv1.3"]
     verify_peer_certificate = false
   }
+
+  lifecycle {
+    ignore_changes = [ssl_configuration]
+  }
 }
 
 output "lb_public_ip" {
   value = [oci_load_balancer_load_balancer.load_balancer.ip_address_details]
 }
+
+output "lb_id" {
+  description = "OCID of the load balancer"
+  value       = oci_load_balancer_load_balancer.load_balancer.id
+}
+
