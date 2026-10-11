@@ -69,12 +69,17 @@ LISTENER_NAME="https-listener"
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 NEW_CERT_NAME="duckdns-cert-${TIMESTAMP}"
 
-# Query currently active certificate on the listener to allow clean up later
-OLD_CERT_NAME=$(oci lb listener get \
+# Query currently active listener configuration from Load Balancer
+LISTENER_JSON=$(oci lb load-balancer get \
   --load-balancer-id "$LB_ID" \
-  --listener-name "$LISTENER_NAME" \
-  --query 'data."ssl-configuration"."certificate-name"' \
-  --raw-output 2>/dev/null || echo "")
+  --query 'data.listeners."https-listener"' \
+  2>/dev/null || echo "{}")
+
+OLD_CERT_NAME=$(echo "$LISTENER_JSON" | jq -r '."ssl-configuration"."certificate-name" // empty' 2>/dev/null || echo "")
+BACKEND_SET=$(echo "$LISTENER_JSON" | jq -r '."default-backend-set-name" // "backendSet"' 2>/dev/null || echo "backendSet")
+PORT=$(echo "$LISTENER_JSON" | jq -r '.port // 443' 2>/dev/null || echo "443")
+PROTOCOL=$(echo "$LISTENER_JSON" | jq -r '.protocol // "HTTP"' 2>/dev/null || echo "HTTP")
+HOSTNAMES=$(echo "$LISTENER_JSON" | jq -c '."hostname-names" // []' 2>/dev/null || echo "[]")
 
 echo "Current listener certificate: ${OLD_CERT_NAME:-none}"
 echo "Uploading new certificate '$NEW_CERT_NAME' to Load Balancer..."
@@ -94,17 +99,24 @@ oci lb certificate create \
 
 echo "Certificate '$NEW_CERT_NAME' successfully created on Load Balancer."
 
+# Build hostname arguments if hostnames exist
+HOSTNAME_OPT=()
+if [ "$HOSTNAMES" != "[]" ] && [ -n "$HOSTNAMES" ]; then
+  HOSTNAME_OPT=("--hostname-names" "$HOSTNAMES")
+fi
+
 # Update the listener to use the new certificate
 echo "Updating listener '$LISTENER_NAME' to reference '$NEW_CERT_NAME'..."
 oci lb listener update \
   --load-balancer-id "$LB_ID" \
   --listener-name "$LISTENER_NAME" \
-  --default-backend-set-name "backendSet" \
-  --port 443 \
-  --protocol "HTTP" \
+  --default-backend-set-name "$BACKEND_SET" \
+  --port "$PORT" \
+  --protocol "$PROTOCOL" \
   --ssl-certificate-name "$NEW_CERT_NAME" \
-  --ssl-protocols '["TLSv1.2", "TLSv1.3"]' \
   --ssl-verify-peer-certificate false \
+  "${HOSTNAME_OPT[@]}" \
+  --force \
   --wait-for-state SUCCEEDED
 
 echo "Listener '$LISTENER_NAME' successfully updated with '$NEW_CERT_NAME'."
@@ -119,6 +131,7 @@ if [ -n "$OLD_CERT_NAME" ] && [ "$OLD_CERT_NAME" != "null" ] && [ "$OLD_CERT_NAM
       --force || echo "Warning: Failed to delete superseded certificate '$OLD_CERT_NAME'."
   fi
 fi
+
 
 # -----------------------------------------------------------------------------
 # 3. Synchronize Secrets to OCI Key Vault
