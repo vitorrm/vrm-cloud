@@ -1,6 +1,9 @@
 #!/bin/bash
 
-#Run: source ./scripts/start-ssh-session.sh
+# Description: Provisions an OCI Bastion session via Terraform and exports the 
+# BASTION_SESSION_ID so it can be used for subsequent tunneling or commands.
+#
+# Run: source ./scripts/start-ssh-session.sh
 
 pwd
 

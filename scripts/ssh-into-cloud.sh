@@ -1,6 +1,10 @@
 #!/bin/bash
 
-#Run: source ./scripts/ssh-into-cloud.sh
+# Description: Provisions an OCI Bastion session, establishes an SSH tunnel in the background, 
+# and drops you into an interactive terminal session to the cloud server. The tunnel is 
+# automatically closed when you exit the SSH session.
+#
+# Run: source ./scripts/ssh-into-cloud.sh
 
 pwd
 
